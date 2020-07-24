@@ -85,3 +85,24 @@ I am always happy to answer any questions you may have. Please email me at
 5. Implement unit test
 6. Implement business logic
 7. Discuss the solution 
+
+### Node version
+This project uses node/12.18.3 and ES2015, the latest stable version when the project is being created.
+
+#### To setup
+
+```
+$ npm install
+```
+
+#### To build the source
+
+```
+$ npm build
+```
+
+#### To run the server
+
+```
+$ npm start
+```
