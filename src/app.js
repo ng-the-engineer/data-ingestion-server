@@ -4,6 +4,7 @@ import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 
 import mainRouter from './routes/root'
+import config from './config'
 
 const app = new Koa()
 const router = new Router()
@@ -17,4 +18,4 @@ app.use(async ctx => {
   ctx.body = 'Invalid path'
 })
 
-const server = app.listen(8080)
+const server = app.listen(config.local.port)
