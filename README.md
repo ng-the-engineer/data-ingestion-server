@@ -98,7 +98,7 @@ $ npm install
 #### To build the source
 
 ```
-$ npm build
+$ npm run build
 ```
 
 #### To run the server
@@ -106,3 +106,10 @@ $ npm build
 ```
 $ npm start
 ```
+
+#### To setup ESLint
+
+```
+$ npx eslint --init
+```
+
