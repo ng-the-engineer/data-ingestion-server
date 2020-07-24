@@ -113,3 +113,8 @@ $ npm start
 $ npx eslint --init
 ```
 
+#### To run ESLint
+
+```
+$ npx eslint *.*
+```
