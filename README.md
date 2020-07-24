@@ -118,3 +118,9 @@ $ npx eslint --init
 ```
 $ npx eslint *.*
 ```
+
+#### To run integration test
+
+```
+$ npm run api-test
+```

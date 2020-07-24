@@ -8,4 +8,10 @@ router.get('/data', async (ctx) => {
   }
 })
 
+router.put('/data', async (ctx) => {
+  ctx.body = {
+    'message': 'Not implemented yet'
+  }
+})
+
 module.exports = router
