@@ -1,3 +1,20 @@
-import request from 'request';
+import Koa from 'koa'
+import Router from 'koa-router'
+import logger from 'koa-logger'
+import bodyParser from 'koa-bodyparser'
 
-console.log(`Hello world`);
+import mainRouter from './routes/root'
+
+const app = new Koa()
+const router = new Router()
+
+app.use(bodyParser())
+app.use(logger())
+app.use(mainRouter.routes())
+app.use(mainRouter.allowedMethods())
+
+app.use(async ctx => {
+  ctx.body = 'Invalid path'
+})
+
+const server = app.listen(8080)
