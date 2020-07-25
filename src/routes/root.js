@@ -3,6 +3,8 @@ import logger from 'koa-logger'
 import datetimeUtil from '../utils/datetime'
 import numericUtil from '../utils/numeric'
 import config from '../config'
+import saveSensorRecordService from '../services/saveSensorRecord'
+import getSensorRecordService from '../services/getSensorRecord'
 
 const router = koaRouter()
 
@@ -15,9 +17,9 @@ router.get('/data', async (ctx) => {
   ctx.assert(datetimeUtil.validateUTC(request.until), 422, utcFormatMessage('Query', 'until'))
   ctx.assert(datetimeUtil.validateSequence(request.since, request.until), 422, sequenceMessage('since', 'until'))
 
-  ctx.body = {
-    'message': 'Not implemented yet'
-  }
+  const records = await getSensorRecordService.getRecords(request.sensorId, request.since, request.until)
+
+  ctx.body = records
 })
 
 router.put('/data', async (ctx) => {
@@ -27,9 +29,10 @@ router.put('/data', async (ctx) => {
   ctx.assert(body.value, 400, bodyParamMessage('value'))
   ctx.assert(datetimeUtil.validateUTC(body.time), 422, utcFormatMessage('Body', 'time'))
   ctx.assert(numericUtil.validateValue(body.value), 422, valueFormatMessage('value'))
-  ctx.body = {
-    'message': 'Not implemented yet'
-  }
+
+  const record = await saveSensorRecordService.saveRecord(body.sensorId, body.time, body.value)
+
+  ctx.body = record
 })
 
 const queryParamMessage = (property) => {
