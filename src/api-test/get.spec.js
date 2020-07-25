@@ -12,9 +12,9 @@ chai.use(chaiHttp)
 describe('API Test', () => {
   describe('GET /data', () => {
     it('should return an array of sensor data', (done) => {
-      const sensorId = '123'
-      const since = '2020-07-30:12:30:00:000'
-      const until = '2020-07-30:12:40:00:000'
+      const sensorId = 'fhfh'
+      const since = '2020-07-30T14:20:00.888Z'
+      const until = '2020-07-30T14:30:00.888Z'
 
       chai.request(`${config.local.host}:${config.local.port}`)
         .get(`/data?sensorId=${sensorId}&since=${since}&until=${until}`)

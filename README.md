@@ -79,9 +79,9 @@ I am always happy to answer any questions you may have. Please email me at
 ## Plan
 
 1. Define Node version, ES script version
-2. Scaffold the route, controller, service, and unit tests
-3. Setup local database
-4. Implement integration test
+2. Scaffold the route, controller, service
+3. Implement integration test
+4. Setup local database
 5. Implement unit test
 6. Implement business logic
 7. Discuss the solution 
@@ -120,6 +120,8 @@ $ npx eslint *.*
 ```
 
 #### To run integration test
+
+Note: API tests are against the compiled tests in lib/, please build before you run.
 
 ```
 $ npm run api-test
