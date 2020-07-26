@@ -18,4 +18,7 @@ app.use(async ctx => {
   ctx.body = 'Invalid path'
 })
 
-const server = app.listen(config.local.port)
+const server = app.listen(config.local.port, () => {
+  console.info(`Data ingestion server start listening port ${config.local.port}`)
+})
+
