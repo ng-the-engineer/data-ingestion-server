@@ -1,5 +1,7 @@
 import dynamo from 'dynamodb'
 import sensorRecordModel from '../persistence/model/sensorRecord'
+import eventEmitter from '../events/thresholdAlerts'
+import monitorService from './monitor'
 
 dynamo.AWS.config.update({
   region: 'local',
@@ -9,6 +11,8 @@ dynamo.AWS.config.update({
 const sensorRecord = sensorRecordModel.defineSensorRecordTable()
 
 const saveRecord = (sensorId, time, value) => {
+
+  monitorService.inspect(value)
 
   const record = {
     sensorId,

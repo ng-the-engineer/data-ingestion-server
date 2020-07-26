@@ -83,8 +83,9 @@ I am always happy to answer any questions you may have. Please email me at
 3. Implement integration test
 4. Setup local database
 5. Implement unit test
-6. Implement business logic
-7. Discuss the solution 
+6. Implement save and get logic
+7. Implement alert event listener
+8. Discuss the solution 
 
 ### Node version
 This project uses node/12.18.3 and ES2015, the latest stable version when the project is being created.
@@ -125,4 +126,54 @@ Note: API tests are against the compiled tests in lib/, please build before you 
 
 ```
 $ npm run api-test
+```
+
+
+### Project Structure
+
+
+```
+.
+├── src                              (Root folder all source files)
+│   ├── api-test
+│   │   ├── get.spec.js              (API test for GET /data)
+│   │   └── put.spec.js              (API test for PUT /data)
+│   ├── events
+│   │   ├── thresholdAlert.js        (Events registration)
+│   │   └── thresholdAlert.spec.js   
+│   ├── persistence
+│   │   ├── model
+│   │   │   └── sensorRecord.js      (Table registration)   
+│   │   ├── schema
+│   │   │   └── sensorRecord.js      (Schema)   
+│   │   ├── scripts
+│   │   │   └── sensorRecord.js      (Create table script)   
+│   │   └── throughput
+│   │   │   └── sensorRecord.js      (DynamoDB throughput setting)   
+│   ├── routes
+│   │   └── root.js                  (Route controller)
+│   ├── services
+│   │   ├── getSensorRecord.js       (Get sensor data service)
+│   │   ├── getSensorRecord.spec.js
+│   │   ├── monitor.js               (Monitor sensor data service)
+│   │   ├── monitor.spec.js
+│   │   ├── saveSensorRecord.js      (Save sensor data service)
+│   │   └── saveSensorRecord.spec.js
+│   ├── utils
+│   │   ├── datetime.js              (UTC timestamp util)
+│   │   ├── datetime.spec.js
+│   │   ├── numeric.js               (Number range util)
+│   │   └── numeric.spec.js
+│   ├── app.js                       (App entry point)
+│   └── config.js                    (App-wise config)
+├── lib                              (Files compiled by Babel)
+│   ├── config
+│   └── features
+├── .babelrc                         (ES2015 config)
+├── .eslintrc.json 
+├── .gitignore                  
+├── node_modules
+├── package-lock.js
+├── package.js                       (Node.js library management)
+└── README.md
 ```
