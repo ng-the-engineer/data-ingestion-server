@@ -5,8 +5,8 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "api-test": "babel --presets es2015 -d lib/ src && mocha lib/api-test/*.spec.js --exit",
-    "unit-test": "mocha --require babel-register src/utils/*.spec.js --unhandled-rejections=strict",
+    "api-test": "babel --presets es2015 -d lib/ src && nyc --reporter=lcov --reporter=text-summary mocha lib/api-test/*.spec.js --exit",
+    "unit-test": "nyc --reporter=lcov --reporter=text-summary mocha --require babel-register src/utils/*.spec.js --unhandled-rejections=strict",
     "start": "node lib/app.js",
     "build": "babel --presets es2015 -d lib/ src"
   },
@@ -29,6 +29,7 @@
     "eslint": "^7.5.0",
     "eslint-config-google": "^0.14.0",
     "mocha-each": "^2.0.1",
+    "nyc": "^15.1.0",
     "sinon": "^9.0.2"
   },
   "dependencies": {
