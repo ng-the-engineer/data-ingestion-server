@@ -87,26 +87,9 @@ I am always happy to answer any questions you may have. Please email me at
 7. Implement alert event listener
 8. Discuss the solution 
 
-### Node version
-This project uses node/12.18.3 and ES2015, the latest stable version when the project is being created.
 
-#### To setup
 
-```
-$ npm install
-```
 
-#### To build the source
-
-```
-$ npm run build
-```
-
-#### To run the server
-
-```
-$ npm start
-```
 
 #### To setup ESLint
 
@@ -120,13 +103,6 @@ $ npx eslint --init
 $ npx eslint *.*
 ```
 
-#### To run integration test
-
-Note: API tests are against the compiled tests in lib/, please build before you run.
-
-```
-$ npm run api-test
-```
 
 
 ### Project Structure
@@ -176,4 +152,301 @@ $ npm run api-test
 ├── package-lock.js
 ├── package.js                       (Node.js library management)
 └── README.md
+```
+
+
+### Pre-requisite
+This project uses node/12.18.3 and ES2015, the latest stable version when the project is being created.
+
+#### Setup node.js app
+
+1. Under root folder, run
+
+```
+$ npm install
+```
+
+2. To build the source, run command below. The source files will be compliled to the folder `lib`.
+
+```
+$ npm run build
+```
+
+#### Setup database
+
+This implementation work with a local DynamoDB. To setup, please follow below steps.
+
+1. [Install local DynamoDB](https://gist.github.com/ng-the-engineer/1f3b9bc61ab718ba36b9a6fe0b4f5289)
+
+2. [Configure dummy AWS credential](https://gist.github.com/ng-the-engineer/e89b16e83c216b09d35d762b12878d31)
+
+3. [(Optional) Setup DynamoDB GUI tool](https://gist.github.com/ng-the-engineer/7050636d63e3cdf3db6b0bea6dc5602a)
+
+4. Run a script to create the table. You will see the message `Table is created successfully` when the table is created successfully.
+
+```
+# node ./lib/persistence/scripts/createTable.js
+```
+
+#### Start the Data Ingestion Server
+
+```
+$ npm start
+```
+
+#### Try out some scenarios
+
+[A simple rule is defined to simulate the threshold alerts](https://github.com/ng-the-engineer/data-ingestion-server/blob/develop/src/config.js#L10)
+
+
+| Alert           | Value      |
+| --------------- |:----------:|
+| LEVEL_ONE_ALERT | > 100      |
+| LEVEL_TWO_ALERT | > 200      |
+
+
+##### 1. Receive sensor data having value of 66.8
+
+```
+curl --location --request PUT 'localhost:8080/data' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "sensorId": "12345678",
+    "time": "2020-07-26T17:04:56.988Z",
+    "value": 66.8
+}'
+```
+
+
+Response 
+
+```
+{
+    "status": "RECORD_SAVED",
+    "record": {
+        "value": 66.8,
+        "time": "2020-07-26T17:04:56.988Z",
+        "sensorId": "12345678"
+    }
+}
+```
+
+##### 2. Receive sensor data having value of 103.456
+
+```
+curl --location --request PUT 'localhost:8080/data' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "sensorId": "12345678",
+    "time": "2020-07-26T17:08:56.988Z",
+    "value": 103.456
+}'
+```
+
+Response
+
+```
+{
+    "status": "RECORD_SAVED",
+    "record": {
+        "value": 103.456,
+        "time": "2020-07-26T17:08:56.988Z",
+        "sensorId": "12345678"
+    }
+}
+```
+
+In the server log, an `LEVEL_TWO_ALERT` was triggered
+```
+<-- PUT /data
+Level Two Alert 103.456
+--> PUT /data 200 17ms 108b
+```
+
+##### 3. Receive sensor data having value of 204.98
+
+```
+curl --location --request PUT 'localhost:8080/data' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "sensorId": "12345678",
+    "time": "2020-07-26T17:19:56.988Z",
+    "value": 204.98
+}'
+```
+
+Response
+
+```
+{
+    "status": "RECORD_SAVED",
+    "record": {
+        "value": 204.98,
+        "time": "2020-07-26T17:19:56.988Z",
+        "sensorId": "12345678"
+    }
+}
+```
+
+In the server log, an `LEVEL_ONE_ALERT` was triggered
+
+```
+<-- PUT /data
+Level One Alert! 204.98
+--> PUT /data 200 15ms 107b
+```
+
+##### 4. If there is duplicated record (identical sensorId and time)
+
+It results in the followed response
+
+```
+{
+    "status": "FAIL_TO_SAVE",
+    "message": "The conditional request failed"
+}
+```
+
+### Notes for development
+
+#### BDD
+
+- The PUT /data endpoint is tested in `./lib/api-test/put.spec.js`
+- The GET /data endpoint int tested in `./lib/api-test/get.spec.js`
+
+1. Execute `npm run build` first because the tests is against build/ folder
+2. Make sure the local DynamoDB is running 
+3. Run below command,
+
+```
+ $ npm run api-test
+```
+
+Test result
+
+```
+Data ingestion server start listening port 8080
+
+
+  API Test
+    GET /data
+  <-- GET /data?sensorId=fhfh&since=2020-07-30T14:20:00.888Z&until=2020-07-30T14:30:00.888Z
+  --> GET /data?sensorId=fhfh&since=2020-07-30T14:20:00.888Z&until=2020-07-30T14:30:00.888Z 200 27ms 30b
+      ✓ should return an array of sensor data (42ms)
+  <-- GET /data?since=2020-07-30:12:30:00:000&until=2020-07-30:12:40:00:000
+  xxx GET /data?since=2020-07-30:12:30:00:000&until=2020-07-30:12:40:00:000 422 1ms -
+      ✓ should return 422 if sensorId is missing
+  <-- GET /data?sensorId=123&until=2020-07-30:12:40:00:000
+  xxx GET /data?sensorId=123&until=2020-07-30:12:40:00:000 422 1ms -
+      ✓ should return 422 if since is missing
+  <-- GET /data?sensorId=123&since=2020-07-30:12:30:00:000
+  xxx GET /data?sensorId=123&since=2020-07-30:12:30:00:000 422 1ms -
+      ✓ should return 422 if until is missing
+
+  API Test
+    PUT /data
+  <-- PUT /data
+Level Two Alert 123.45
+  --> PUT /data 204 19ms
+      ✓ should return status 204 if the input is valid (39ms)
+  <-- PUT /data
+  xxx PUT /data 400 0ms -
+      ✓ should return 400 if it does not contain sensorId
+  <-- PUT /data
+  xxx PUT /data 400 0ms -
+      ✓ should return 400 if it does not contain time
+  <-- PUT /data
+Level Two Alert 123.45
+  <-- PUT /data
+Level Two Alert 123.45
+  --> PUT /data 409 11ms 68b
+  --> PUT /data 409 10ms 68b
+      ✓ should return 409 if data is duplicated
+
+
+  8 passing (116ms)
+
+
+=============================== Coverage summary ===============================
+Statements   : 93.21% ( 261/280 )
+Branches     : 68.29% ( 56/82 )
+Functions    : 96.49% ( 55/57 )
+Lines        : 95.24% ( 260/273 )
+================================================================================
+```
+
+
+Test results and coverage report is at `./coverage/lcov-report/index.html`
+
+#### TDD
+
+- The unit tests are tested against `src/` folder.
+- mocha, chai, chai-as-promised, mocha-each, and chai-events are used
+
+To run the test, run
+
+```
+$ npm run unit-test
+```
+
+
+
+```
+➜  data-ingestion-server git:(develop) ✗ npm run unit-test
+
+> converge-backend-exercise@0.2.1 unit-test /Users/anthonyng/Repo/Github-ng/data-ingestion-server
+> nyc --reporter=lcov --reporter=text-summary mocha --require babel-register src/utils/*.spec.js --unhandled-rejections=strict
+
+
+
+  Utils - datetime unit tests
+    validateUTC
+      ✓ return true if input is 2020-06-04T14:20:00.888Z
+      ✓ return false if input is 2020-06-04
+      ✓ return false if input is 2020-06-04T09:00
+      ✓ return false if input is 2020-06-04 09:00:00.888Z
+      ✓ return false if input is 2020-06-04T09:00:00.888
+      ✓ return false if input is 2020-06-04T09:00:00:888Z
+      ✓ return false if input is 2020-13-04T09:00:00.888Z
+      ✓ return false if input is 2020-06-31T09:00:00.888Z
+      ✓ return false if input is 2020-06-04T25:00:00.888Z
+      ✓ return false if input is 2020-06-04T09:62:00.888Z
+    validateSequence
+      ✓ return true if 2020-07-30T14:20:00.888Z is earlier than 2020-07-30T14:30:00.888Z
+      ✓ return false if 2020-07-30T14:20:00.888Z is earlier than 2020-07-30T14:10:00.888Z
+      ✓ return false if 2020-07-30T14:20:00.888Z is earlier than 2020-07-30T14:20:00.888Z
+      ✓ return Not valid UTC format if since is 2020-07-20 and until is 2020-07-30T14:30:00.888Z
+      ✓ return Not valid UTC format if since is 2020-07-30T14:30:00.888Z and until is 2020-07-20
+      ✓ return Not valid UTC format if since is 2020-07-30 and until is 2020-07-20
+
+  Utils - numeric unit tests
+    validateValue
+      ✓ return true if value is 100
+      ✓ return true if value is -999
+      ✓ return true if value is 657
+      ✓ return true if value is -362326363
+      ✓ return true if value is 9007199254740991
+      ✓ return false if value is 9007199254740992
+      ✓ return true if value is -9007199254740991
+      ✓ return false if value is -9007199254740992
+      ✓ return false if value is abc
+      ✓ return false if value is 233.9
+      ✓ return false if value is -455
+
+
+  27 passing (21ms)
+
+
+=============================== Coverage summary ===============================
+Statements   : 100% ( 50/50 )
+Branches     : 100% ( 8/8 )
+Functions    : 100% ( 14/14 )
+Lines        : 100% ( 49/49 )
+================================================================================
+```
+
+#### ESLint
+
+```
+$ npx eslint 'src/**/*.js'
 ```

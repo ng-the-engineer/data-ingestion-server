@@ -1,5 +1,5 @@
-import dynamo from 'dynamodb'
-import Joi from 'joi'
+import dynamo from 'dynamodb';
+import Joi from 'joi';
 
 const table = {
   hashKey: 'sensorId',
@@ -8,10 +8,10 @@ const table = {
     id: dynamo.types.uuid(),
     sensorId: Joi.string(),
     time: Joi.date().timestamp(),
-    value: Joi.number()
-  }
-}
+    value: Joi.number(),
+  },
+};
 
 module.exports = {
-  table
-}
+  table,
+};

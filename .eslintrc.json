@@ -7,8 +7,11 @@
         "google"
     ],
     "parserOptions": {
-        "ecmaVersion": 11
+        "ecmaVersion": 11,
+        "sourceType": "module"
     },
     "rules": {
+        "max-len": ["error", { "code": 144 }],
+        "prefer-promise-reject-errors": "off"
     }
 }

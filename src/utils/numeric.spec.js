@@ -1,8 +1,8 @@
-import { expect } from 'chai'
-import forEach from 'mocha-each'
-import numericUtil from './numeric'
+import {expect} from 'chai';
+import forEach from 'mocha-each';
+import numericUtil from './numeric';
 
-describe ('Utils - numeric unit tests', () => {
+describe('Utils - numeric unit tests', () => {
   describe('validateValue', () => {
     const testData = [
       [true, 100],
@@ -12,25 +12,25 @@ describe ('Utils - numeric unit tests', () => {
       [true, 9007199254740991],
       [false, 9007199254740992],
       [true, -9007199254740991],
-      [false, -9007199254740992]
-    ]
+      [false, -9007199254740992],
+    ];
 
     forEach(testData)
-    .it('return %s if value is %d', (expected, value) => {
-      const actual = numericUtil.validateValue(value)
-      expect(actual).to.equal(expected)
-    })
+        .it('return %s if value is %d', (expected, value) => {
+          const actual = numericUtil.validateValue(value);
+          expect(actual).to.equal(expected);
+        });
 
     const errorData = [
       [false, 'abc'],
       [false, '233.9'],
-      [false, '-455']
-    ]
+      [false, '-455'],
+    ];
 
     forEach(errorData)
-    .it('return %s if value is %s', (expected, value) => {
-      const actual = numericUtil.validateValue(value)
-      expect(actual).to.equal(expected)
-    })
-  })
-})
+        .it('return %s if value is %s', (expected, value) => {
+          const actual = numericUtil.validateValue(value);
+          expect(actual).to.equal(expected);
+        });
+  });
+});
