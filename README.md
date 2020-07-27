@@ -88,23 +88,6 @@ I am always happy to answer any questions you may have. Please email me at
 8. Discuss the solution 
 
 
-
-
-
-#### To setup ESLint
-
-```
-$ npx eslint --init
-```
-
-#### To run ESLint
-
-```
-$ npx eslint *.*
-```
-
-
-
 ### Project Structure
 
 
@@ -143,8 +126,6 @@ $ npx eslint *.*
 │   ├── app.js                       (App entry point)
 │   └── config.js                    (App-wise config)
 ├── lib                              (Files compiled by Babel)
-│   ├── config
-│   └── features
 ├── .babelrc                         (ES2015 config)
 ├── .eslintrc.json 
 ├── .gitignore                  
@@ -316,7 +297,8 @@ It results in the followed response
 
 1. Execute `npm run build` first because the tests is against build/ folder
 2. Make sure the local DynamoDB is running 
-3. Run below command,
+3. Make sure the server is running
+4. Run below command,
 
 ```
  $ npm run api-test
@@ -325,53 +307,29 @@ It results in the followed response
 Test result
 
 ```
-Data ingestion server start listening port 8080
-
-
   API Test
     GET /data
-  <-- GET /data?sensorId=fhfh&since=2020-07-30T14:20:00.888Z&until=2020-07-30T14:30:00.888Z
-  --> GET /data?sensorId=fhfh&since=2020-07-30T14:20:00.888Z&until=2020-07-30T14:30:00.888Z 200 27ms 30b
-      ✓ should return an array of sensor data (42ms)
-  <-- GET /data?since=2020-07-30:12:30:00:000&until=2020-07-30:12:40:00:000
-  xxx GET /data?since=2020-07-30:12:30:00:000&until=2020-07-30:12:40:00:000 422 1ms -
+      ✓ should return an array of sensor data (165ms)
       ✓ should return 422 if sensorId is missing
-  <-- GET /data?sensorId=123&until=2020-07-30:12:40:00:000
-  xxx GET /data?sensorId=123&until=2020-07-30:12:40:00:000 422 1ms -
       ✓ should return 422 if since is missing
-  <-- GET /data?sensorId=123&since=2020-07-30:12:30:00:000
-  xxx GET /data?sensorId=123&since=2020-07-30:12:30:00:000 422 1ms -
       ✓ should return 422 if until is missing
 
   API Test
     PUT /data
-  <-- PUT /data
-Level Two Alert 123.45
-  --> PUT /data 204 19ms
-      ✓ should return status 204 if the input is valid (39ms)
-  <-- PUT /data
-  xxx PUT /data 400 0ms -
+      ✓ should return status 204 if the input is valid (88ms)
       ✓ should return 400 if it does not contain sensorId
-  <-- PUT /data
-  xxx PUT /data 400 0ms -
       ✓ should return 400 if it does not contain time
-  <-- PUT /data
-Level Two Alert 123.45
-  <-- PUT /data
-Level Two Alert 123.45
-  --> PUT /data 409 11ms 68b
-  --> PUT /data 409 10ms 68b
-      ✓ should return 409 if data is duplicated
+      ✓ should return 409 if data is duplicated (42ms)
 
 
-  8 passing (116ms)
+  8 passing (316ms)
 
 
 =============================== Coverage summary ===============================
-Statements   : 93.21% ( 261/280 )
-Branches     : 68.29% ( 56/82 )
-Functions    : 96.49% ( 55/57 )
-Lines        : 95.24% ( 260/273 )
+Statements   : 87% ( 87/100 )
+Branches     : 57.69% ( 15/26 )
+Functions    : 100% ( 23/23 )
+Lines        : 91.58% ( 87/95 )
 ================================================================================
 ```
 
@@ -448,5 +406,46 @@ Lines        : 100% ( 49/49 )
 #### ESLint
 
 ```
+$ npx eslint --init
+```
+
+```
 $ npx eslint 'src/**/*.js'
 ```
+
+
+#### Final thoughts
+
+##### Database
+I made an assumption for this project.
+
+- The frequency of database WRITE is evenly distributed and the payload of each request/ response is small.
+- The frequency of database READ surge in short time but not remain in long duration. The payload is large.
+
+With below reasons, I ruled out relational database.
+
+- Only a very few number of tables need to use in this app. It is unlikely to enforce the integrity between tables.
+- The row-lock or table-lock mechanism in relational database is harmful instead of beneficial because it slow down the throughput of the WRITE access.
+- The data structure of various sensors is less flexible to change compared to node.js server. Relational database schema does not favor changes, while NoSQL is designed for accepting changes.
+
+There are a few popular NoSql database. I chose DynamoDB because:
+
+- The volume of data for IoT scenario increase at high speed. The database need to scale out very often. Self-hosted solution is challenging to cope with scaling up without downtime.
+- AWS is the most popular cloud platform. An AWS NoSql solution has synergy in the same ecosystem.
+
+##### Event-driven design
+
+I used event-driven design for the threshold alert with below reasons:
+
+- By decoupling the save sensor record service with value monitor service, the PUT /data endpoint response quicker because the monitoring work is offloaded.
+- No architectural change if the event-based mechanism will be replaced by a more scalable and high availability solution like Kafka or RabbitMQ.
+
+##### Improvement 
+
+Due to limited time, some minor issue should be fixed in future. 
+
+- A nasty node dependency warning message is displayed in logs. It needs to be fixed.
+- To built the API spec with Open API 3.0.
+- A health endpoint should be added to capture metric information.
+
+
