@@ -182,8 +182,8 @@ $ npm start
 
 | Alert           | Value      |
 | --------------- |:----------:|
-| LEVEL_ONE_ALERT | > 100      |
-| LEVEL_TWO_ALERT | > 200      |
+| LEVEL_ONE_ALERT | > 200      |
+| LEVEL_TWO_ALERT | > 100      |
 
 
 ##### 1. Receive sensor data having value of 66.8
@@ -295,7 +295,7 @@ It results in the followed response
 - The PUT /data endpoint is tested in `./lib/api-test/put.spec.js`
 - The GET /data endpoint int tested in `./lib/api-test/get.spec.js`
 
-1. Execute `npm run build` first because the tests is against build/ folder
+1. Execute `npm run build` first because the tests is against lib/ folder
 2. Make sure the local DynamoDB is running 
 3. Make sure the server is running
 4. Run below command,
